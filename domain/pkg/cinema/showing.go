@@ -1,7 +1,7 @@
 package cinema
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
 	"log"
 	"time"
 )
@@ -33,8 +33,14 @@ type Film struct {
 // Reserve is 予約処理
 func (s Showing) Reserve(seats []Seat) (err error) {
 	defer func() { // エラーが発生したら全て取り消す
+		if p := recover(); p != nil {
+			err = fmt.Errorf("%v", p)
+		}
 		if err != nil {
-			err = errors.Wrap(err, "Rollbackエラー："+s.Screen.Seats.Rollback(s.StartTime, seats).Error())
+			rollbackError := s.Screen.Seats.Rollback(s.StartTime, seats)
+			if rollbackError != nil {
+				err = rollbackError
+			}
 		}
 	}()
 	// 全ての席に手を付ける
@@ -43,6 +49,9 @@ func (s Showing) Reserve(seats []Seat) (err error) {
 	}
 	// 先着がいないことを確認する。
 	notDoubleBooking, err := s.Screen.Seats.IsFirstTouch(s.StartTime, seats)
+	if err != nil {
+		return
+	}
 	// 先着がいたら諦めて手放す
 	if !notDoubleBooking {
 		if err = s.Screen.Seats.LetGo(s.StartTime, seats); err != nil {
