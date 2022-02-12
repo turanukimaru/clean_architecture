@@ -1,6 +1,7 @@
 package cinema
 
 import (
+	"github.com/pkg/errors"
 	"log"
 	"time"
 )
@@ -9,7 +10,7 @@ import (
 type Showing struct {
 	Film      Film
 	Screen    Screen
-	StartTime *time.Time
+	StartTime time.Time
 	logger    *log.Logger
 }
 
@@ -33,24 +34,24 @@ type Film struct {
 func (s Showing) Reserve(seats []Seat) (err error) {
 	defer func() { // エラーが発生したら全て取り消す
 		if err != nil {
-			s.Screen.Seats.Rollback()
+			err = errors.Wrap(err, "Rollbackエラー："+s.Screen.Seats.Rollback(s.StartTime, seats).Error())
 		}
 	}()
 	// 全ての席に手を付ける
-	if err = s.Screen.Seats.Touch(seats); err != nil {
+	if err = s.Screen.Seats.Touch(s.StartTime, seats); err != nil {
 		return
 	}
 	// 先着がいないことを確認する。
-	doubleBooking := s.Screen.Seats.IsDouble(seats)
+	notDoubleBooking, err := s.Screen.Seats.IsFirstTouch(s.StartTime, seats)
 	// 先着がいたら諦めて手放す
-	if doubleBooking {
-		if err = s.Screen.Seats.LetGo(seats); err != nil {
+	if !notDoubleBooking {
+		if err = s.Screen.Seats.LetGo(s.StartTime, seats); err != nil {
 			return
 		}
 		return
 	}
 	// 予約を確定して記帳する
-	if err = s.Screen.Seats.Book(seats); err != nil {
+	if err = s.Screen.Seats.Book(s.StartTime, seats); err != nil {
 		return
 	}
 	return
@@ -58,9 +59,9 @@ func (s Showing) Reserve(seats []Seat) (err error) {
 
 // Reservable is reserve
 type Reservable interface {
-	Touch(seats []Seat) error
-	IsDouble(seats []Seat) bool
-	LetGo(seats []Seat) error
-	Book(seats []Seat) error
-	Rollback() error
+	Touch(startTime time.Time, seats []Seat) error
+	IsFirstTouch(startTime time.Time, seats []Seat) (bool, error)
+	LetGo(startTime time.Time, seats []Seat) error
+	Book(startTime time.Time, seats []Seat) error
+	Rollback(startTime time.Time, seats []Seat) error
 }
