@@ -2,12 +2,9 @@ package calcapi
 
 import (
 	"context"
-	"github.com/turanukimaru/ca/goa/dummies"
-	"github.com/turanukimaru/ca/usecase/pkg/dummycalc"
-	"github.com/turanukimaru/gormstart/pkg/dummydb"
+	"github.com/turanukimaru/ca/goa/gen/calc"
+	uc "github.com/turanukimaru/ca/usecase/pkg/calc"
 	"log"
-
-	"github.com/turanukimaru/goastart/gen/calc"
 )
 
 // calc service example implementation.
@@ -23,10 +20,11 @@ func NewCalc(logger *log.Logger) calc.Service {
 
 // Add implements add.
 func (s *calcsrvc) Add(ctx context.Context, p *calc.AddPayload) (res int, err error) {
-	//	s.logger.Print("calc.add")
-	dummy := dummies.Dummy{}
-	err = dummy.Hello()
-	err = dummy.Allow()
-	err = dummydb.DbAccess()
-	return dummycalc.Add(p.A, p.B), err
+	////	s.logger.Print("calc.add")
+	//dummy := dummies.Dummy{}
+	//err = dummy.Hello()
+	//err = dummy.Allow()
+	//err = dummydb.DbAccess()
+	usecase := uc.Adder{A: 1, B: 2}
+	return usecase.Add(context.Background())
 }

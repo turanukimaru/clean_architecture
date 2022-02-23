@@ -1,4 +1,4 @@
-package dummycalc
+package dummylogic
 
 type Adder struct {
 }

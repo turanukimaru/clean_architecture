@@ -2,9 +2,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/turanukimaru/ca/usecase/dummycalc"
+	uc "github.com/turanukimaru/ca/usecase/pkg/calc"
 	"net/http"
 	"strconv"
 )
@@ -30,7 +31,8 @@ func main() {
 		if errB != nil {
 
 		}
-		sum := dummycalc.Add(a, b)
+		usecase := uc.Adder{A: 1, B: 2}
+		sum, _ := usecase.Add(context.Background())
 		message := fmt.Sprintf("%d + %d is %d", a, b, sum)
 		c.String(http.StatusOK, message)
 	})
@@ -43,7 +45,8 @@ func main() {
 		}
 		fmt.Printf("A:%s", c.Param("a"))
 		fmt.Printf("B:%s", c.Param("b"))
-		sum := dummycalc.Add(a.A, a.B)
+		usecase := uc.Adder{A: 1, B: 2}
+		sum, _ := usecase.Add(context.Background())
 		message := fmt.Sprintf("%d + %d is %d", a.A, a.B, sum)
 		c.String(http.StatusOK, message)
 
