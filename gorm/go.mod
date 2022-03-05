@@ -2,7 +2,10 @@ module github.com/turanukimaru/ca/gorm
 
 go 1.17
 
+replace github.com/turanukimaru/ca/domain => ../domain
+
 require (
+	github.com/turanukimaru/ca/domain v0.0.0-00010101000000-000000000000
 	gorm.io/driver/sqlserver v1.2.1
 	gorm.io/gorm v1.22.5
 )

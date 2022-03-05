@@ -30,7 +30,6 @@ func DbAccess() error {
 	}
 
 	// Migrate the schema
-	// ただ権限の関係か SQL server では機能しない…
 	db.AutoMigrate(&Product{})
 
 	// Create
@@ -50,6 +49,7 @@ func DbAccess() error {
 	var dummies []DummyTable
 	// call は上手くいかない…
 	db.Raw("call dbo.dummyProcedure(?,?)", 0, 3).Scan(dummies)
+	// Stored Procedure を動かすときはこう。
 	sql := `DECLARE	@return_value int
 			EXEC	@return_value = [dbo].[dummyProcedure]
 			@Param1 = ?,
